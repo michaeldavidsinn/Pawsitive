@@ -12,15 +12,22 @@ struct LoadingView: View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(.blue)
+                .tint(Theme.gradientStart)
             
             Text("Analyzing Emotion...")
-                .font(.headline)
+                .font(.system(.headline, design: .rounded))
                 .bold()
             
             Text("Reading facial expressions and posture cues")
-                .font(.subheadline)
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundColor(.secondary)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Analyzing Emotion. Please wait.")
+        .accessibilityAddTraits(.updatesFrequently)
     }
+}
+
+#Preview {
+    LoadingView()
 }

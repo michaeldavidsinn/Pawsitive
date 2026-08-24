@@ -48,6 +48,9 @@ struct CameraCaptureScreen: View {
                                 .shadow(color: Theme.gradientStart.opacity(0.5), radius: 8, x: 0, y: 4)
                         }
                     }
+                    .accessibilityLabel("Take Photo")
+                    .accessibilityHint("Captures an image of your dog for analysis.")
+                    .accessibilityAddTraits(.isButton)
                     Spacer()
                 }
                 .padding(.vertical, 30)
@@ -58,4 +61,8 @@ struct CameraCaptureScreen: View {
             }
         }
     }
+}
+
+#Preview {
+    CameraCaptureScreen(cameraManager: CameraManager(), onCapture: { _ in })
 }

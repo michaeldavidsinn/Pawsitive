@@ -36,6 +36,7 @@ struct BoundingBoxOverlay: View {
                 }
             }
         }
+        .accessibilityHidden(true)
     }
     
     // Warna dinamis sesuai emosi
@@ -56,4 +57,13 @@ struct BoundingBoxOverlay: View {
         let height = box.size.height * screenSize.height
         return CGRect(x: x, y: y, width: width, height: height)
     }
+}
+
+#Preview {
+    BoundingBoxOverlay(
+        detections: [DetectionResult(label: "Happy", confidence: 0.99, boundingBox: CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6))],
+        screenSize: CGSize(width: 300, height: 400)
+    )
+    .frame(width: 300, height: 400)
+    .background(Color.gray)
 }

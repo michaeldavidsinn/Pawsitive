@@ -33,6 +33,8 @@ struct ResultView: View {
                     BoundingBoxOverlay(detections: detections, screenSize: geometry.size)
                 }
                 .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Captured image of your dog.")
             }
             .padding(.horizontal, 24)
             
@@ -62,6 +64,8 @@ struct ResultView: View {
                                 .bold()
                         }
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Detected Emotion: \(topDetection.label), Confidence: \(Int(topDetection.confidence * 100)) percent")
                     
                     Divider()
                     
@@ -76,6 +80,7 @@ struct ResultView: View {
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .accessibilityElement(children: .combine)
                 } else {
                     HStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -93,6 +98,7 @@ struct ResultView: View {
                         }
                     }
                     .padding(.vertical, 8)
+                    .accessibilityElement(children: .combine)
                 }
             }
             .padding(20)
@@ -115,6 +121,8 @@ struct ResultView: View {
                     .background(Theme.gradientStart.opacity(0.15))
                     .clipShape(Capsule())
                 }
+                .accessibilityLabel("Retake Photo")
+                .accessibilityAddTraits(.isButton)
                 
                 Button(action: onGoHome) {
                     HStack {
@@ -129,6 +137,8 @@ struct ResultView: View {
                     .clipShape(Capsule())
                     .shadow(color: Theme.gradientStart.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
+                .accessibilityLabel("Go to Home")
+                .accessibilityAddTraits(.isButton)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
@@ -182,4 +192,13 @@ struct ResultView: View {
             return "Observe your dog's overall body language for context."
         }
     }
+}
+
+#Preview {
+    ResultView(
+        image: UIImage(systemName: "photo")!,
+        detections: [DetectionResult(label: "Happy", confidence: 0.95, boundingBox: .zero)],
+        onRetake: {},
+        onGoHome: {}
+    )
 }
