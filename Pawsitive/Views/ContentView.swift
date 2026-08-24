@@ -49,20 +49,23 @@ struct ContentView: View {
     }
     
     private func processCapturedFrame(buffer: CVPixelBuffer) {
-        let ciImage = CIImage(cvPixelBuffer: buffer)
-        let context = CIContext()
-        
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
-            currentScreen = .camera
-            return
-        }
-        
-        let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
-        
-        detector.processFrame(buffer)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            currentScreen = .result(image: uiImage, detections: detector.detections)
+
+        autoreleasepool {
+            let ciImage = CIImage(cvPixelBuffer: buffer)
+            let context = CIContext(options: [.useSoftwareRenderer: false])
+            
+            guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+                currentScreen = .camera
+                return
+            }
+            
+            let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
+  
+            detector.processFrame(buffer)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                currentScreen = .result(image: uiImage, detections: detector.detections)
+            }
         }
     }
 }
