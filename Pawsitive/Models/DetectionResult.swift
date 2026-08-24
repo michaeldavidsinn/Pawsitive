@@ -69,7 +69,7 @@ class Detector: ObservableObject {
         }
         
         // Atur agar orientasi gambar sesuai kamera HP
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right, options: [:])
         try? handler.perform([request])
     }
 }
