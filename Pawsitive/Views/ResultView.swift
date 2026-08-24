@@ -60,7 +60,6 @@ struct ResultView: View {
                     
                     Divider()
                     
-                    // Recommended Action Message
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Recommended Action:")
                             .font(.caption)
@@ -72,10 +71,22 @@ struct ResultView: View {
                             .foregroundColor(.primary)
                     }
                 } else {
-                    Text("No dog detected. Please try capturing closer with better lighting.")
-                        .font(.subheadline)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.title2)
+                            .foregroundColor(.orange)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("No Dog Detected")
+                                .font(.headline)
+                                .bold()
+                            
+                            Text("Please make sure your dog's face is clearly visible with good lighting.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
             }
             .padding()
