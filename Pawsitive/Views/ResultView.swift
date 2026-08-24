@@ -15,98 +15,105 @@ struct ResultView: View {
     let onGoHome: () -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Text("Detection Result")
-                .font(.title2)
+                .font(.system(.title2, design: .rounded))
                 .bold()
-                .padding(.top, 20)
+                .padding(.top, 24)
             
             // Image Canvas + Bounding Box Overlay
             GeometryReader { geometry in
                 ZStack {
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFit()
+                        .scaledToFill()
                         .frame(width: geometry.size.width, height: geometry.size.height)
-                        .cornerRadius(16)
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     
                     BoundingBoxOverlay(detections: detections, screenSize: geometry.size)
                 }
+                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
             
             // Dynamic Emotion & Interaction Advice Card
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
                 if let topDetection = detections.first {
                     HStack {
-                        Text("Detected Emotion:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Detected Emotion")
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundColor(.secondary)
+                            
+                            Text(topDetection.label.capitalized)
+                                .font(.system(.title3, design: .rounded))
+                                .bold()
+                                .foregroundColor(color(for: topDetection.label))
+                        }
+                        
                         Spacer()
-                        Text(topDetection.label.capitalized)
-                            .font(.headline)
-                            .bold()
-                    }
-                    
-                    HStack {
-                        Text("Confidence Score:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(Int(topDetection.confidence * 100))%")
-                            .font(.subheadline)
-                            .bold()
+                        
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("Confidence")
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundColor(.secondary)
+                            Text("\(Int(topDetection.confidence * 100))%")
+                                .font(.system(.title3, design: .rounded))
+                                .bold()
+                        }
                     }
                     
                     Divider()
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Recommended Action:")
-                            .font(.caption)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Recommended Action")
+                            .font(.system(.caption, design: .rounded))
                             .bold()
                             .foregroundColor(.secondary)
                         
                         Text(recommendationMessage(for: topDetection.label))
-                            .font(.subheadline)
+                            .font(.system(.subheadline, design: .rounded))
                             .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 } else {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.title2)
+                            .font(.system(size: 32))
                             .foregroundColor(.orange)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("No Dog Detected")
-                                .font(.headline)
+                                .font(.system(.headline, design: .rounded))
                                 .bold()
                             
                             Text("Please make sure your dog's face is clearly visible with good lighting.")
-                                .font(.subheadline)
+                                .font(.system(.subheadline, design: .rounded))
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 8)
                 }
             }
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(12)
-            .padding(.horizontal, 20)
+            .padding(20)
+            .background(Theme.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+            .padding(.horizontal, 24)
             
             // Action Buttons
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 Button(action: onRetake) {
                     HStack {
                         Image(systemName: "camera.fill")
                         Text("Retake")
                     }
-                    .font(.headline)
-                    .foregroundColor(.blue)
+                    .font(.system(.headline, design: .rounded))
+                    .foregroundColor(Theme.gradientStart)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue.opacity(0.15))
-                    .cornerRadius(12)
+                    .padding(.vertical, 16)
+                    .background(Theme.gradientStart.opacity(0.15))
+                    .clipShape(Capsule())
                 }
                 
                 Button(action: onGoHome) {
@@ -114,21 +121,36 @@ struct ResultView: View {
                         Image(systemName: "house.fill")
                         Text("Home")
                     }
-                    .font(.headline)
+                    .font(.system(.headline, design: .rounded))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(12)
+                    .padding(.vertical, 16)
+                    .background(Theme.primaryGradient)
+                    .clipShape(Capsule())
+                    .shadow(color: Theme.gradientStart.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
+        .background(Color(UIColor.systemBackground).ignoresSafeArea())
         .onAppear {
             if let topLabel = detections.first?.label {
                 triggerHaptic(for: topLabel)
             }
+        }
+    }
+    
+    private func color(for label: String) -> Color {
+        switch label.lowercased() {
+        case "happy":
+            return .green
+        case "angry":
+            return .red
+        case "alert", "sad":
+            return .orange
+        default:
+            return Theme.gradientStart
         }
     }
     

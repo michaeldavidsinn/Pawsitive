@@ -18,32 +18,43 @@ struct CameraCaptureScreen: View {
             
             VStack {
                 Text("Center your dog's face in the frame")
-                    .font(.subheadline)
+                    .font(.system(.subheadline, design: .rounded))
                     .bold()
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
                     .background(.ultraThinMaterial)
-                    .cornerRadius(20)
+                    .clipShape(Capsule())
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .padding(.top, 50)
                 
                 Spacer()
                 
-                // Shutter Button
-                Button(action: {
-                    if let buffer = cameraManager.currentBuffer {
-                        onCapture(buffer)
+                // Camera Controls Area
+                HStack {
+                    Spacer()
+                    // Shutter Button
+                    Button(action: {
+                        if let buffer = cameraManager.currentBuffer {
+                            onCapture(buffer)
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .stroke(Color.white.opacity(0.8), lineWidth: 5)
+                                .frame(width: 82, height: 82)
+                            Circle()
+                                .fill(Theme.primaryGradient)
+                                .frame(width: 68, height: 68)
+                                .shadow(color: Theme.gradientStart.opacity(0.5), radius: 8, x: 0, y: 4)
+                        }
                     }
-                }) {
-                    ZStack {
-                        Circle()
-                            .stroke(Color.white, lineWidth: 4)
-                            .frame(width: 78, height: 78)
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 66, height: 66)
-                    }
+                    Spacer()
                 }
-                .padding(.bottom, 40)
+                .padding(.vertical, 30)
+                .background(
+                    LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]), startPoint: .bottom, endPoint: .top)
+                        .ignoresSafeArea(edges: .bottom)
+                )
             }
         }
     }
