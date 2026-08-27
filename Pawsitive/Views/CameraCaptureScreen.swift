@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct CameraCaptureScreen: View {
     @ObservedObject var cameraManager: CameraManager
     let onCapture: (CVPixelBuffer) -> Void
+    var onPhotoSelected: ((UIImage) -> Void)? = nil
+    
+    @State private var selectedItem: PhotosPickerItem? = nil
     
     var body: some View {
         ZStack {
@@ -30,8 +34,19 @@ struct CameraCaptureScreen: View {
                 Spacer()
                 
                 // Camera Controls Area
-                HStack {
-                    Spacer()
+                HStack(spacing: 40) {
+                    // Upload Photo Button
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Upload Photo")
+                    .accessibilityHint("Choose a photo of your dog from your library.")
+                    
                     // Shutter Button
                     Button(action: {
                         if let buffer = cameraManager.currentBuffer {
@@ -51,13 +66,37 @@ struct CameraCaptureScreen: View {
                     .accessibilityLabel("Take Photo")
                     .accessibilityHint("Captures an image of your dog for analysis.")
                     .accessibilityAddTraits(.isButton)
-                    Spacer()
+                    
+                    // Switch Camera Button
+                    Button(action: {
+                        cameraManager.switchCamera()
+                    }) {
+                        Image(systemName: "arrow.triangle.2.circlepath.camera")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Switch Camera")
+                    .accessibilityHint("Toggles between the front and back camera.")
+                    .accessibilityAddTraits(.isButton)
                 }
-                .padding(.vertical, 30)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+                .padding(.bottom, 50)
                 .background(
-                    LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]), startPoint: .bottom, endPoint: .top)
-                        .ignoresSafeArea(edges: .bottom)
+                    LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top)
                 )
+                .ignoresSafeArea(edges: .bottom)
+            }
+        }
+        .onChange(of: selectedItem) { newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data) {
+                    onPhotoSelected?(uiImage)
+                }
             }
         }
     }

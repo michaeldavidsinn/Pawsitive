@@ -55,4 +55,39 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
             self.currentBuffer = pixelBuffer
         }
     }
+    
+    func switchCamera() {
+        sessionQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.captureSession.beginConfiguration()
+            
+            guard let currentInput = self.captureSession.inputs.first as? AVCaptureDeviceInput else {
+                self.captureSession.commitConfiguration()
+                return
+            }
+            
+            self.captureSession.removeInput(currentInput)
+            
+            let newPosition: AVCaptureDevice.Position = currentInput.device.position == .back ? .front : .back
+            guard let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
+                  let newInput = try? AVCaptureDeviceInput(device: newDevice),
+                  self.captureSession.canAddInput(newInput) else {
+                // Fallback to original input if failure
+                self.captureSession.addInput(currentInput)
+                self.captureSession.commitConfiguration()
+                return
+            }
+            
+            self.captureSession.addInput(newInput)
+            
+            // Adjust video output connection for front camera mirroring if needed
+            if let connection = self.videoOutput.connection(with: .video) {
+                if connection.isVideoMirroringSupported {
+                    connection.isVideoMirrored = (newPosition == .front)
+                }
+            }
+            
+            self.captureSession.commitConfiguration()
+        }
+    }
 }

@@ -85,4 +85,57 @@ class Detector: ObservableObject {
         )
         try? handler.perform([request])
     }
+
+    func processImage(_ image: UIImage) {
+        guard let visionModel = visionModel,
+              let cgImage = image.cgImage else { return }
+
+        // Determine orientation
+        let orientation: CGImagePropertyOrientation
+        switch image.imageOrientation {
+        case .up: orientation = .up
+        case .down: orientation = .down
+        case .left: orientation = .left
+        case .right: orientation = .right
+        case .upMirrored: orientation = .upMirrored
+        case .downMirrored: orientation = .downMirrored
+        case .leftMirrored: orientation = .leftMirrored
+        case .rightMirrored: orientation = .rightMirrored
+        @unknown default: orientation = .up
+        }
+
+        let startTime = CFAbsoluteTimeGetCurrent()
+
+        let request = VNCoreMLRequest(model: visionModel) { [weak self] request, error in
+            let timeElapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            print("⚡ Core ML Static Image Inference Time: \(String(format: "%.2f", timeElapsed)) ms")
+
+            guard let self = self,
+                let results = request.results as? [VNRecognizedObjectObservation] else { return }
+
+            DispatchQueue.main.async {
+                self.detections = results.compactMap { observation in
+                    guard let topClassification = observation.labels.first,
+                        topClassification.confidence > 0.5 else { return nil }
+                    var displayLabel = topClassification.identifier
+                    if let index = Int(topClassification.identifier),
+                        index < self.emotionLabels.count {
+                        displayLabel = self.emotionLabels[index]
+                    }
+                    return DetectionResult(
+                        label: displayLabel,
+                        confidence: topClassification.confidence,
+                        boundingBox: observation.boundingBox
+                    )
+                }
+            }
+        }
+
+        let handler = VNImageRequestHandler(
+            cgImage: cgImage,
+            orientation: orientation,
+            options: [:]
+        )
+        try? handler.perform([request])
+    }
 }

@@ -31,6 +31,10 @@ struct ContentView: View {
                     onCapture: { capturedBuffer in
                         currentScreen = .loading
                         processCapturedFrame(buffer: capturedBuffer)
+                    },
+                    onPhotoSelected: { selectedImage in
+                        currentScreen = .loading
+                        processSelectedImage(uiImage: selectedImage)
                     }
                 )
                 
@@ -66,6 +70,14 @@ struct ContentView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 currentScreen = .result(image: uiImage, detections: detector.detections)
             }
+        }
+    }
+
+    private func processSelectedImage(uiImage: UIImage) {
+        detector.processImage(uiImage)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            currentScreen = .result(image: uiImage, detections: detector.detections)
         }
     }
 }
