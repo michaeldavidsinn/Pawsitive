@@ -39,7 +39,7 @@ class Detector: ObservableObject {
         }
     }
 
-    func processFrame(_ pixelBuffer: CVPixelBuffer) {
+    func processFrame(_ pixelBuffer: CVPixelBuffer, isFrontCamera: Bool = false) {
         guard let visionModel = visionModel else { return }
 
         // 1. Catat waktu mulai
@@ -78,9 +78,10 @@ class Detector: ObservableObject {
             }
         }
 
+        let orientation: CGImagePropertyOrientation = isFrontCamera ? .left : .right
         let handler = VNImageRequestHandler(
             cvPixelBuffer: pixelBuffer,
-            orientation: .right,
+            orientation: orientation,
             options: [:]
         )
         try? handler.perform([request])

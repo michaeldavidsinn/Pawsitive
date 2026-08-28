@@ -12,6 +12,7 @@ import Combine
 
 class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     @Published var currentBuffer: CVPixelBuffer?
+    @Published var isFrontCamera: Bool = false
     
     let captureSession = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -85,6 +86,10 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
                 if connection.isVideoMirroringSupported {
                     connection.isVideoMirrored = (newPosition == .front)
                 }
+            }
+            
+            DispatchQueue.main.async {
+                self.isFrontCamera = (newPosition == .front)
             }
             
             self.captureSession.commitConfiguration()

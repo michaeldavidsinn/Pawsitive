@@ -63,9 +63,10 @@ struct ContentView: View {
                 return
             }
             
-            let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
+            let orientation: UIImage.Orientation = cameraManager.isFrontCamera ? .left : .right
+            let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: orientation)
   
-            detector.processFrame(buffer)
+            detector.processFrame(buffer, isFrontCamera: cameraManager.isFrontCamera)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 currentScreen = .result(image: uiImage, detections: detector.detections)
