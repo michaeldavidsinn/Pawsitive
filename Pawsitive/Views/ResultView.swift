@@ -14,6 +14,11 @@ struct ResultView: View {
     let onRetake: () -> Void
     let onGoHome: () -> Void
     
+    @State private var adviceText: String = "Generating AI Advice..."
+    @State private var isLoading: Bool = true
+    
+    private let adviceGenerator = SLMAdviceGenerator.shared
+    
     var body: some View {
         VStack(spacing: 24) {
             Text("Detection Result")
@@ -70,15 +75,21 @@ struct ResultView: View {
                     Divider()
                     
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Recommended Action")
+                        Text("AI Pet Care Advice")
                             .font(.system(.caption, design: .rounded))
                             .bold()
                             .foregroundColor(.secondary)
                         
-                        Text(recommendationMessage(for: topDetection.label))
-                            .font(.system(.subheadline, design: .rounded))
-                            .foregroundColor(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if isLoading {
+                            ProgressView("Analyzing condition...")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding()
+                        } else {
+                            Text(adviceText)
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundColor(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     .accessibilityElement(children: .combine)
                 } else {
@@ -106,6 +117,26 @@ struct ResultView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
             .padding(.horizontal, 24)
+            
+            .task {
+                guard let topDetection = detections.first else {
+                    await MainActor.run {
+                        self.adviceText = "No dog detected to analyze."
+                        self.isLoading = false
+                    }
+                    return
+                }
+                
+                let generated = await adviceGenerator.generateAdvice(
+                    for: topDetection.label,
+                    confidence: topDetection.confidence
+                )
+                
+                await MainActor.run {
+                    self.adviceText = generated
+                    self.isLoading = false
+                }
+            }
             
             // Action Buttons
             HStack(spacing: 16) {
@@ -177,19 +208,6 @@ struct ResultView: View {
             impactGenerator.impactOccurred()
         default:
             break
-        }
-    }
-    
-    private func recommendationMessage(for label: String) -> String {
-        switch label.lowercased() {
-        case "happy":
-            return "Your dog feels safe and relaxed. Great time for playing or giving treats!"
-        case "angry":
-            return "Give your dog some space. Avoid sudden movements or direct eye contact."
-        case "alert":
-            return "Your dog is observing surroundings closely. Check what caught their attention."
-        default:
-            return "Observe your dog's overall body language for context."
         }
     }
 }
