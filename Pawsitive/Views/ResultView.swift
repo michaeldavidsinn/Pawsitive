@@ -20,103 +20,109 @@ struct ResultView: View {
     private let adviceGenerator = SLMAdviceGenerator.shared
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Detection Result")
-                .font(.system(.title2, design: .rounded))
-                .bold()
-                .padding(.top, 24)
-            
-            // Image Canvas + Bounding Box Overlay
-            GeometryReader { geometry in
-                ZStack {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        VStack(spacing: 0) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    Text("Detection Result")
+                        .font(.system(.title2, design: .rounded))
+                        .bold()
+                        .padding(.top, 24)
                     
-                    BoundingBoxOverlay(detections: detections, screenSize: geometry.size)
-                }
-                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Captured image of your dog.")
-            }
-            .padding(.horizontal, 24)
-            
-            // Dynamic Emotion & Interaction Advice Card
-            VStack(alignment: .leading, spacing: 16) {
-                if let topDetection = detections.first {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Detected Emotion")
-                                .font(.system(.subheadline, design: .rounded))
-                                .foregroundColor(.secondary)
+                    // Image Canvas + Bounding Box Overlay
+                    GeometryReader { geometry in
+                        ZStack {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                             
-                            Text(topDetection.label.capitalized)
-                                .font(.system(.title3, design: .rounded))
-                                .bold()
-                                .foregroundColor(color(for: topDetection.label))
+                            BoundingBoxOverlay(detections: detections, screenSize: geometry.size)
                         }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text("Confidence")
-                                .font(.system(.subheadline, design: .rounded))
-                                .foregroundColor(.secondary)
-                            Text("\(Int(topDetection.confidence * 100))%")
-                                .font(.system(.title3, design: .rounded))
-                                .bold()
-                        }
+                        .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Captured image of your dog.")
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Detected Emotion: \(topDetection.label), Confidence: \(Int(topDetection.confidence * 100)) percent")
+                    .aspectRatio(image.size.width > 0 && image.size.height > 0 ? image.size.width / image.size.height : 1.0, contentMode: .fit)
+                    .padding(.horizontal, 24)
                     
-                    Divider()
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("AI Pet Care Advice")
-                            .font(.system(.caption, design: .rounded))
-                            .bold()
-                            .foregroundColor(.secondary)
-                        
-                        if isLoading {
-                            ProgressView("Analyzing condition...")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding()
+                    // Dynamic Emotion & Interaction Advice Card
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let topDetection = detections.first {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Detected Emotion")
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text(topDetection.label.capitalized)
+                                        .font(.system(.title3, design: .rounded))
+                                        .bold()
+                                        .foregroundColor(color(for: topDetection.label))
+                                }
+                                
+                                Spacer()
+                                
+                                VStack(alignment: .trailing, spacing: 4) {
+                                    Text("Confidence")
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                    Text("\(Int(topDetection.confidence * 100))%")
+                                        .font(.system(.title3, design: .rounded))
+                                        .bold()
+                                }
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("Detected Emotion: \(topDetection.label), Confidence: \(Int(topDetection.confidence * 100)) percent")
+                            
+                            Divider()
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("AI Pet Care Advice")
+                                    .font(.system(.caption, design: .rounded))
+                                    .bold()
+                                    .foregroundColor(.secondary)
+                                
+                                if isLoading {
+                                    ProgressView("Analyzing condition...")
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding()
+                                } else {
+                                    Text(adviceText)
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .foregroundColor(.primary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .accessibilityElement(children: .combine)
                         } else {
-                            Text(adviceText)
-                                .font(.system(.subheadline, design: .rounded))
-                                .foregroundColor(.primary)
-                                .fixedSize(horizontal: false, vertical: true)
+                            HStack(spacing: 16) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.orange)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("No Dog Detected")
+                                        .font(.system(.headline, design: .rounded))
+                                        .bold()
+                                    
+                                    Text("Please make sure your dog's face is clearly visible with good lighting.")
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.vertical, 8)
+                            .accessibilityElement(children: .combine)
                         }
                     }
-                    .accessibilityElement(children: .combine)
-                } else {
-                    HStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.orange)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("No Dog Detected")
-                                .font(.system(.headline, design: .rounded))
-                                .bold()
-                            
-                            Text("Please make sure your dog's face is clearly visible with good lighting.")
-                                .font(.system(.subheadline, design: .rounded))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 8)
-                    .accessibilityElement(children: .combine)
+                    .padding(20)
+                    .background(Theme.secondaryBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
                 }
             }
-            .padding(20)
-            .background(Theme.secondaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
-            .padding(.horizontal, 24)
             
             .task {
                 guard let topDetection = detections.first else {
@@ -129,7 +135,8 @@ struct ResultView: View {
                 
                 let generated = await adviceGenerator.generateAdvice(
                     for: topDetection.label,
-                    confidence: topDetection.confidence
+                    confidence: topDetection.confidence,
+                    image: image
                 )
                 
                 await MainActor.run {

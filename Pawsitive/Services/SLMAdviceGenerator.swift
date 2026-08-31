@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 actor SLMAdviceGenerator {
     
@@ -26,31 +27,75 @@ actor SLMAdviceGenerator {
     
     private init() {}
     
-    /// Generasi saran AI secara dinamis menggunakan Gemini 3.6 Flash API
-    func generateAdvice(for label: String, confidence: Float) async -> String {
+    /// Generasi saran AI secara dinamis menggunakan Gemini API
+    func generateAdvice(for label: String, confidence: Float, image: UIImage? = nil) async -> String {
         // Jika API Key belum diset, langsung pakai fallback lokal agar aplikasi tidak macet
         guard apiKey != "YOUR_GEMINI_API_KEY" && !apiKey.isEmpty else {
             print("⚠️ Gemini API Key belum dikonfigurasi. Menggunakan fallback lokal.")
             return fallbackAdvice(for: label)
         }
         
-        let prompt = "You are an expert dog behaviorist. The dog's detected emotion is \(label) with \(Int(confidence * 100))% confidence. Give 1 short, warm, and highly practical advice sentence for the owner on how to react to their dog right now. Write it in English and keep it brief (max 15 words)."
+        let prompt = """
+        You are an expert dog behaviorist speaking directly to a dog owner in a professional and warm tone. 
+        Analyze the provided image to identify the dog's breed and its current environment. 
+        The dog's detected emotion is \(label) with \(Int(confidence * 100))% confidence. 
+
+        Provide highly practical advice on how the owner should react right now based on the breed, environment, and emotion. 
+
+        Guidelines:
+        - Give ONE immediate, actionable step the owner can do.
+        - If the breed is unclear, refer to the pet affectionately without guessing.
+        - Do NOT start with robotic phrases like "Based on the image" or "I can see". Dive straight into the natural advice.
+        - Keep it very concise (maximum 2-3 sentences). Write in English.
+        """
         
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=\(apiKey)") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=\(apiKey)") else {
             return fallbackAdvice(for: label)
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 10.0
+        request.timeoutInterval = 60.0
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        var parts: [[String: Any]] = [
+            ["text": prompt]
+        ]
+        
+        if let image = image {
+            // Resize image to prevent massive payload size (max 800x800)
+            let maxDimension: CGFloat = 800.0
+            let size = image.size
+            var newSize = size
+            if size.width > maxDimension || size.height > maxDimension {
+                let ratio = size.width / size.height
+                if ratio > 1 {
+                    newSize = CGSize(width: maxDimension, height: maxDimension / ratio)
+                } else {
+                    newSize = CGSize(width: maxDimension * ratio, height: maxDimension)
+                }
+            }
+            
+            UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+            let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            if let finalImage = resizedImage ?? image as UIImage?, let imageData = finalImage.jpegData(compressionQuality: 0.6) {
+                let base64Image = imageData.base64EncodedString()
+                parts.append([
+                    "inline_data": [
+                        "mime_type": "image/jpeg",
+                        "data": base64Image
+                    ]
+                ])
+            }
+        }
         
         let requestBody: [String: Any] = [
             "contents": [
                 [
-                    "parts": [
-                        ["text": prompt]
-                    ]
+                    "parts": parts
                 ]
             ],
             "generationConfig": [
@@ -76,8 +121,8 @@ actor SLMAdviceGenerator {
                let candidates = json["candidates"] as? [[String: Any]],
                let firstCandidate = candidates.first,
                let content = firstCandidate["content"] as? [String: Any],
-               let parts = content["parts"] as? [[String: Any]],
-               let firstPart = parts.first,
+               let responseParts = content["parts"] as? [[String: Any]],
+               let firstPart = responseParts.first,
                let text = firstPart["text"] as? String {
                 
                 let cleanedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -118,13 +163,13 @@ actor SLMAdviceGenerator {
             return "Test Fallback: (API Key belum dikonfigurasi)"
         }
         
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=\(apiKey)") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=\(apiKey)") else {
             return "Error: Invalid URL"
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 10.0
+        request.timeoutInterval = 60.0
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let requestBody: [String: Any] = [
