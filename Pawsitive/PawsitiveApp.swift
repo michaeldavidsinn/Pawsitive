@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct PawsitiveApp: App {
 
-    let slmEngine = SLMAdviceGenerator.shared
+    let slmEngine = PetAdviceGenerator.shared
 
     var body: some Scene {
         WindowGroup {

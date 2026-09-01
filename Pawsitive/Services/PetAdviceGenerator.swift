@@ -1,5 +1,5 @@
 //
-//  SLMAdviceGenerator.swift
+//  PetAdviceGenerator.swift
 //  Pawsitive
 //
 //  Created by Michael David Sin on 26/08/26.
@@ -8,9 +8,9 @@
 import Foundation
 import UIKit
 
-actor SLMAdviceGenerator {
+actor PetAdviceGenerator {
     
-    static let shared = SLMAdviceGenerator()
+    static let shared = PetAdviceGenerator()
     
     // Membaca API Key dari Secrets.plist agar aman dari git
     private var apiKey: String {

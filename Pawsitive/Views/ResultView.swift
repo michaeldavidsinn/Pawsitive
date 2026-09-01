@@ -18,7 +18,7 @@ struct ResultView: View {
     @State private var isLoading: Bool = true
     @State private var isOfflineMode: Bool = false
     
-    private let adviceGenerator = SLMAdviceGenerator.shared
+    private let adviceGenerator = PetAdviceGenerator.shared
     
     var body: some View {
         VStack(spacing: 0) {
