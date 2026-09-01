@@ -28,11 +28,11 @@ actor SLMAdviceGenerator {
     private init() {}
     
     /// Generasi saran AI secara dinamis menggunakan Gemini API
-    func generateAdvice(for label: String, confidence: Float, image: UIImage? = nil) async -> String {
+    func generateAdvice(for label: String, confidence: Float, image: UIImage? = nil) async -> (text: String, isFallback: Bool) {
         // Jika API Key belum diset, langsung pakai fallback lokal agar aplikasi tidak macet
         guard apiKey != "YOUR_GEMINI_API_KEY" && !apiKey.isEmpty else {
             print("⚠️ Gemini API Key belum dikonfigurasi. Menggunakan fallback lokal.")
-            return fallbackAdvice(for: label)
+            return (text: fallbackAdvice(for: label), isFallback: true)
         }
         
         let prompt = """
@@ -50,7 +50,7 @@ actor SLMAdviceGenerator {
         """
         
         guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=\(apiKey)") else {
-            return fallbackAdvice(for: label)
+            return (text: fallbackAdvice(for: label), isFallback: true)
         }
         
         var request = URLRequest(url: url)
@@ -113,7 +113,7 @@ actor SLMAdviceGenerator {
                 if let errorString = String(data: data, encoding: .utf8) {
                     print("❌ Gemini API Error response: \(errorString)")
                 }
-                return fallbackAdvice(for: label)
+                return (text: fallbackAdvice(for: label), isFallback: true)
             }
             
             // Parsing output JSON dari Gemini
@@ -126,16 +126,16 @@ actor SLMAdviceGenerator {
                let text = firstPart["text"] as? String {
                 
                 let cleanedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                return cleanedText.isEmpty ? fallbackAdvice(for: label) : cleanedText
+                return cleanedText.isEmpty ? (text: fallbackAdvice(for: label), isFallback: true) : (text: cleanedText, isFallback: false)
             }
             
-            return fallbackAdvice(for: label)
+            return (text: fallbackAdvice(for: label), isFallback: true)
         } catch {
             let nsError = error as NSError
-            if nsError.domain == NSURLErrorDomain && (nsError.code == NSURLErrorNotConnectedToInternet || nsError.code == NSURLErrorDataNotAllowed) {
-                return "No internet connection. Please check your network to get dynamic AI advice."
+            if nsError.domain == NSURLErrorDomain && (nsError.code == NSURLErrorNotConnectedToInternet || nsError.code == NSURLErrorDataNotAllowed || nsError.code == NSURLErrorTimedOut) {
+                return (text: "No internet connection or timeout. Please check your network to get dynamic AI advice.", isFallback: true)
             }
-            return fallbackAdvice(for: label)
+            return (text: fallbackAdvice(for: label), isFallback: true)
         }
     }
     

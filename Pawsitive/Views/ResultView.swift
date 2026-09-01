@@ -16,6 +16,7 @@ struct ResultView: View {
     
     @State private var adviceText: String = "Generating AI Advice..."
     @State private var isLoading: Bool = true
+    @State private var isOfflineMode: Bool = false
     
     private let adviceGenerator = SLMAdviceGenerator.shared
     
@@ -78,10 +79,26 @@ struct ResultView: View {
                             Divider()
                             
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("AI Pet Care Advice")
-                                    .font(.system(.caption, design: .rounded))
-                                    .bold()
-                                    .foregroundColor(.secondary)
+                                HStack {
+                                    Text("AI Pet Care Advice")
+                                        .font(.system(.caption, design: .rounded))
+                                        .bold()
+                                        .foregroundColor(.secondary)
+                                    
+                                    if isOfflineMode {
+                                        Spacer()
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "wifi.slash")
+                                            Text("Offline Mode")
+                                        }
+                                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                                        .foregroundColor(.orange)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.orange.opacity(0.15))
+                                        .cornerRadius(4)
+                                    }
+                                }
                                 
                                 if isLoading {
                                     ProgressView("Analyzing condition...")
@@ -129,18 +146,20 @@ struct ResultView: View {
                     await MainActor.run {
                         self.adviceText = "No dog detected to analyze."
                         self.isLoading = false
+                        self.isOfflineMode = true
                     }
                     return
                 }
                 
-                let generated = await adviceGenerator.generateAdvice(
+                let result = await adviceGenerator.generateAdvice(
                     for: topDetection.label,
                     confidence: topDetection.confidence,
                     image: image
                 )
                 
                 await MainActor.run {
-                    self.adviceText = generated
+                    self.adviceText = result.text
+                    self.isOfflineMode = result.isFallback
                     self.isLoading = false
                 }
             }
