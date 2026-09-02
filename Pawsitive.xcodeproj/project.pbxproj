@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2585F3D83046BBB000ECF2B7 /* LlamaSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2585F3D73046BBB000ECF2B7 /* LlamaSwift */; };
 		25F5F0F1303EEFF000CD91B8 /* Hub in Frameworks */ = {isa = PBXBuildFile; productRef = 25F5F0F0303EEFF000CD91B8 /* Hub */; };
 		25F5F0F3303EEFF000CD91B8 /* Tokenizers in Frameworks */ = {isa = PBXBuildFile; productRef = 25F5F0F2303EEFF000CD91B8 /* Tokenizers */; };
 		25F5F0F5303EEFF000CD91B8 /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = 25F5F0F4303EEFF000CD91B8 /* Transformers */; };
@@ -44,6 +45,7 @@
 			files = (
 				25F5F0F5303EEFF000CD91B8 /* Transformers in Frameworks */,
 				25F5F0F3303EEFF000CD91B8 /* Tokenizers in Frameworks */,
+				2585F3D83046BBB000ECF2B7 /* LlamaSwift in Frameworks */,
 				25F5F0F1303EEFF000CD91B8 /* Hub in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -90,6 +92,7 @@
 				25F5F0F0303EEFF000CD91B8 /* Hub */,
 				25F5F0F2303EEFF000CD91B8 /* Tokenizers */,
 				25F5F0F4303EEFF000CD91B8 /* Transformers */,
+				2585F3D73046BBB000ECF2B7 /* LlamaSwift */,
 			);
 			productName = Pawsitive;
 			productReference = 25BB059E3038335A006AAD47 /* Pawsitive.app */;
@@ -121,6 +124,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				25F5F0EF303EEFF000CD91B8 /* XCRemoteSwiftPackageReference "swift-transformers" */,
+				2585F3D63046BBB000ECF2B7 /* XCRemoteSwiftPackageReference "llama" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 25BB059F3038335A006AAD47 /* Products */;
@@ -370,6 +374,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2585F3D63046BBB000ECF2B7 /* XCRemoteSwiftPackageReference "llama" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mattt/llama.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10549.0;
+			};
+		};
 		25F5F0EF303EEFF000CD91B8 /* XCRemoteSwiftPackageReference "swift-transformers" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/huggingface/swift-transformers";
@@ -381,6 +393,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2585F3D73046BBB000ECF2B7 /* LlamaSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2585F3D63046BBB000ECF2B7 /* XCRemoteSwiftPackageReference "llama" */;
+			productName = LlamaSwift;
+		};
 		25F5F0F0303EEFF000CD91B8 /* Hub */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 25F5F0EF303EEFF000CD91B8 /* XCRemoteSwiftPackageReference "swift-transformers" */;

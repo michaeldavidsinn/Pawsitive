@@ -15,10 +15,10 @@ struct ResultView: View {
     let onGoHome: () -> Void
     
     @State private var adviceText: String = "Generating AI Advice..."
+    @State private var detectedBreed: String = "Detecting..."
     @State private var isLoading: Bool = true
-    @State private var isOfflineMode: Bool = false
     
-    private let adviceGenerator = PetAdviceGenerator.shared
+    private let adviceGenerator = LocalLLMService.shared
     
     var body: some View {
         VStack(spacing: 0) {
@@ -29,7 +29,6 @@ struct ResultView: View {
                         .bold()
                         .padding(.top, 24)
                     
-                    // Image Canvas + Bounding Box Overlay
                     GeometryReader { geometry in
                         ZStack {
                             Image(uiImage: image)
@@ -46,62 +45,62 @@ struct ResultView: View {
                     }
                     .aspectRatio(image.size.width > 0 && image.size.height > 0 ? image.size.width / image.size.height : 1.0, contentMode: .fit)
                     .padding(.horizontal, 24)
-                    
-                    // Dynamic Emotion & Interaction Advice Card
+
                     VStack(alignment: .leading, spacing: 16) {
                         if let topDetection = detections.first {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Detected Emotion")
-                                        .font(.system(.subheadline, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text(topDetection.label.capitalized)
-                                        .font(.system(.title3, design: .rounded))
+
+                            VStack(alignment: .leading, spacing: 12) {
+                                
+                                HStack {
+                                    Image(systemName: "pawprint.fill")
+                                        .font(.system(size: 12))
+                                    Text(detectedBreed)
+                                        .font(.system(.caption, design: .rounded))
                                         .bold()
-                                        .foregroundColor(color(for: topDetection.label))
                                 }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Theme.gradientStart.opacity(0.15))
+                                .foregroundColor(Theme.gradientStart)
+                                .clipShape(Capsule())
                                 
-                                Spacer()
-                                
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text("Confidence")
-                                        .font(.system(.subheadline, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                    Text("\(Int(topDetection.confidence * 100))%")
-                                        .font(.system(.title3, design: .rounded))
-                                        .bold()
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Detected Emotion")
+                                            .font(.system(.subheadline, design: .rounded))
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text(topDetection.label.capitalized)
+                                            .font(.system(.title3, design: .rounded))
+                                            .bold()
+                                            .foregroundColor(color(for: topDetection.label))
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text("Confidence")
+                                            .font(.system(.subheadline, design: .rounded))
+                                            .foregroundColor(.secondary)
+                                        Text("\(Int(topDetection.confidence * 100))%")
+                                            .font(.system(.title3, design: .rounded))
+                                            .bold()
+                                    }
                                 }
                             }
                             .accessibilityElement(children: .combine)
-                            .accessibilityLabel("Detected Emotion: \(topDetection.label), Confidence: \(Int(topDetection.confidence * 100)) percent")
+                            .accessibilityLabel("Detected Breed: \(detectedBreed), Emotion: \(topDetection.label), Confidence: \(Int(topDetection.confidence * 100)) percent")
                             
                             Divider()
                             
                             VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    Text("AI Pet Care Advice")
-                                        .font(.system(.caption, design: .rounded))
-                                        .bold()
-                                        .foregroundColor(.secondary)
-                                    
-                                    if isOfflineMode {
-                                        Spacer()
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "wifi.slash")
-                                            Text("Offline Mode")
-                                        }
-                                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                                        .foregroundColor(.orange)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.orange.opacity(0.15))
-                                        .cornerRadius(4)
-                                    }
-                                }
+                                Text("AI Pet Care Advice")
+                                    .font(.system(.caption, design: .rounded))
+                                    .bold()
+                                    .foregroundColor(.secondary)
                                 
                                 if isLoading {
-                                    ProgressView("Analyzing condition...")
+                                    ProgressView("Analyzing breed & condition...")
                                         .frame(maxWidth: .infinity, alignment: .center)
                                         .padding()
                                 } else {
@@ -146,23 +145,28 @@ struct ResultView: View {
                     await MainActor.run {
                         self.adviceText = "No dog detected to analyze."
                         self.isLoading = false
-                        self.isOfflineMode = true
                     }
                     return
                 }
                 
+                // 1. Eksekusi Apple Vision Breed Detector lokal dari foto hasil tangkapan
+                let breed = await VisionBreedDetector.detectBreed(from: image)
+                
+                // 2. Kirim emosi, confidence, dan nama ras ke Local LLM Service (Hapus '!' di sini)
                 let result = await adviceGenerator.generateAdvice(
                     for: topDetection.label,
                     confidence: topDetection.confidence,
-                    image: image
+                    breed: breed
                 )
                 
+                // 3. Update UI (Hapus '!' di sini)
                 await MainActor.run {
+                    self.detectedBreed = breed
                     self.adviceText = result.text
-                    self.isOfflineMode = result.isFallback
                     self.isLoading = false
                 }
             }
+
             
             // Action Buttons
             HStack(spacing: 16) {

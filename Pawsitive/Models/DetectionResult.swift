@@ -16,6 +16,7 @@ struct DetectionResult: Identifiable {
     let label: String
     let confidence: Float
     let boundingBox: CGRect
+    var DetectedBreed: String = "Pet"
 }
 
 class Detector: ObservableObject {
@@ -59,22 +60,7 @@ class Detector: ObservableObject {
             else { return }
 
             DispatchQueue.main.async {
-                self.detections = results.compactMap { observation in
-                    guard let topClassification = observation.labels.first,
-                        topClassification.confidence > 0.5
-                    else { return nil }
-                    var displayLabel = topClassification.identifier
-                    if let index = Int(topClassification.identifier),
-                        index < self.emotionLabels.count
-                    {
-                        displayLabel = self.emotionLabels[index]
-                    }
-                    return DetectionResult(
-                        label: displayLabel,
-                        confidence: topClassification.confidence,
-                        boundingBox: observation.boundingBox
-                    )
-                }
+                self.detections = self.filterBestDetection(results)
             }
         }
 
@@ -115,20 +101,7 @@ class Detector: ObservableObject {
                 let results = request.results as? [VNRecognizedObjectObservation] else { return }
 
             DispatchQueue.main.async {
-                self.detections = results.compactMap { observation in
-                    guard let topClassification = observation.labels.first,
-                        topClassification.confidence > 0.5 else { return nil }
-                    var displayLabel = topClassification.identifier
-                    if let index = Int(topClassification.identifier),
-                        index < self.emotionLabels.count {
-                        displayLabel = self.emotionLabels[index]
-                    }
-                    return DetectionResult(
-                        label: displayLabel,
-                        confidence: topClassification.confidence,
-                        boundingBox: observation.boundingBox
-                    )
-                }
+                self.detections = self.filterBestDetection(results)
             }
         }
 
@@ -138,5 +111,33 @@ class Detector: ObservableObject {
             options: [:]
         )
         try? handler.perform([request])
+    }
+
+    private func filterBestDetection(_ results: [VNRecognizedObjectObservation]) -> [DetectionResult] {
+        let allDetections = results.compactMap { observation -> DetectionResult? in
+            guard let topClassification = observation.labels.first,
+                  topClassification.confidence > 0.5 else { return nil }
+            var displayLabel = topClassification.identifier
+            if let index = Int(topClassification.identifier),
+               index < self.emotionLabels.count {
+                displayLabel = self.emotionLabels[index]
+            }
+            return DetectionResult(
+                label: displayLabel,
+                confidence: topClassification.confidence,
+                boundingBox: observation.boundingBox
+            )
+        }
+        
+        // Ambil 1 hasil dengan bounding box terbesar (anjing paling dekat/jelas)
+        if let best = allDetections.max(by: {
+            let area1 = $0.boundingBox.width * $0.boundingBox.height
+            let area2 = $1.boundingBox.width * $1.boundingBox.height
+            return area1 < area2
+        }) {
+            return [best]
+        }
+        
+        return []
     }
 }
