@@ -23,7 +23,18 @@ struct ContentView: View {
         ZStack {
             switch currentScreen {
             case .home:
-                HomeView(onStart: { currentScreen = .camera })
+                TabView {
+                    HomeView(onStart: { currentScreen = .camera })
+                        .tabItem {
+                            Label("Scan", systemImage: "camera.fill")
+                        }
+                    
+                    HistoryView()
+                        .tabItem {
+                            Label("Journal", systemImage: "book.fill")
+                        }
+                }
+                .tint(Theme.gradientStart)
                 
             case .camera:
                 CameraCaptureScreen(

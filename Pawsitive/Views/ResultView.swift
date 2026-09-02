@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData 
 import UIKit
 
 struct ResultView: View {
@@ -19,6 +20,8 @@ struct ResultView: View {
     @State private var isLoading: Bool = true
     
     private let adviceGenerator = LocalLLMService.shared
+    
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         VStack(spacing: 0) {
@@ -149,21 +152,20 @@ struct ResultView: View {
                     return
                 }
                 
-                // 1. Eksekusi Apple Vision Breed Detector lokal dari foto hasil tangkapan
                 let breed = await VisionBreedDetector.detectBreed(from: image)
-                
-                // 2. Kirim emosi, confidence, dan nama ras ke Local LLM Service (Hapus '!' di sini)
                 let result = await adviceGenerator.generateAdvice(
                     for: topDetection.label,
                     confidence: topDetection.confidence,
                     breed: breed
                 )
                 
-                // 3. Update UI (Hapus '!' di sini)
                 await MainActor.run {
                     self.detectedBreed = breed
                     self.adviceText = result.text
                     self.isLoading = false
+                    
+                    // Simpan otomatis ke SwiftData
+                    self.saveScanHistory(breed: breed, topDetection: topDetection, advice: result.text)
                 }
             }
 
@@ -239,6 +241,21 @@ struct ResultView: View {
         default:
             break
         }
+    }
+    
+    private func saveScanHistory(breed: String, topDetection: DetectionResult, advice: String) {
+        let imageData = image.jpegData(compressionQuality: 0.7)
+        
+        let newEntry = MoodEntry(
+            emotionLabel: topDetection.label,
+            confidence: topDetection.confidence,
+            breed: breed,
+            adviceText: advice,
+            imageData: imageData
+        )
+        
+        modelContext.insert(newEntry)
+        try? modelContext.save()
     }
 }
 
