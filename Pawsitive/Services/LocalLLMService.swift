@@ -54,18 +54,20 @@ actor LocalLLMService {
         let vocab = llama_model_get_vocab(model)
         
         let prompt = """
-        <|user|>
-            You are an expert dog behaviorist speaking directly to a dog owner in a professional and warm tone. 
-            The owner's dog is a \(breed) currently showing a '\(label)' emotion with \(Int(confidence * 100))% confidence. 
+        <|begin_of_text|><|start_header_id|>system<|end_header_id|>
         
-            Provide highly practical advice on how the owner should react right now based on this emotion and breed. 
+        You are an expert dog behaviorist speaking directly to a dog owner in a professional and warm tone.<|eot_id|><|start_header_id|>user<|end_header_id|>
         
-            Guidelines:
-            - Give ONE immediate, actionable step the owner can do.
-            - Refer to the pet affectionately as \(breed).
-            - Dive straight into the natural advice without any robotic introductions.
-            - Keep it very concise (maximum 2-3 sentences). Write in English.
-            <|assistant|>
+        The owner's dog is a \(breed) currently showing a '\(label)' emotion with \(Int(confidence * 100))% confidence. 
+        
+        Provide highly practical advice on how the owner should react right now based on this emotion and breed. 
+        
+        Guidelines:
+        - Give ONE immediate, actionable step the owner can do.
+        - Refer to the pet affectionately as \(breed).
+        - Dive straight into the natural advice without any robotic introductions.
+        - Keep it very concise (maximum 2-3 sentences). Write in English.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+        
         """
         
         var tokens = [llama_token](repeating: 0, count: 1024)
