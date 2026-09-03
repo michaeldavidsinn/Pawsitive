@@ -28,6 +28,8 @@ struct HistoryDetailView: View {
                         .frame(height: 300)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Photo of scanned dog")
                 } else {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(Color(uiColor: .secondarySystemBackground))
@@ -38,6 +40,8 @@ struct HistoryDetailView: View {
                                 .font(.system(size: 48))
                                 .foregroundColor(.secondary)
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("No photo available")
                 }
                 
                 // 2. Header Information
@@ -118,6 +122,7 @@ struct HistoryDetailView: View {
                 } label: {
                     Image(systemName: "trash")
                         .foregroundColor(.red)
+                        .accessibilityLabel("Delete Scan")
                 }
             }
         }

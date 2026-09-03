@@ -46,6 +46,10 @@ struct HomeView: View {
                         .shadow(color: Theme.gradientStart.opacity(0.3), radius: 10, x: 0, y: 5)
                     }
                     .padding(.horizontal)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Decode Dog's Mood")
+                    .accessibilityHint("Tap to analyze with AI")
+                    .accessibilityAddTraits(.isButton)
                     
                     // 2. Statistics/Insights
                     if !moodEntries.isEmpty {
@@ -72,6 +76,7 @@ struct HomeView: View {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 40))
                                     .foregroundColor(.secondary.opacity(0.5))
+                                    .accessibilityHidden(true)
                                 Text("No recent scans yet.")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
@@ -158,6 +163,8 @@ struct StatCard: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(value)")
     }
 }
 
@@ -194,6 +201,8 @@ struct RecentScanCard: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(entry.emotionLabel.capitalized) mood, \(entry.timestamp.formatted(date: .abbreviated, time: .shortened))")
     }
 }
 
@@ -220,6 +229,8 @@ struct MoodChartView: View {
             }
             .chartLegend(.hidden)
             .frame(height: 140)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Bar chart showing emotion distribution.")
         }
         .padding()
         .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -266,6 +277,8 @@ struct DailyTipCard: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Pet Fact: \(randomTip)")
         .onAppear {
             if randomTip.isEmpty {
                 randomTip = tips.randomElement() ?? tips[0]

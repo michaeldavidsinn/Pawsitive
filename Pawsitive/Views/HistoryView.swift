@@ -20,6 +20,7 @@ struct HistoryView: View {
                         Image(systemName: "pawprint.circle")
                             .font(.system(size: 64))
                             .foregroundColor(.secondary)
+                            .accessibilityHidden(true)
                         Text("No Scan History Yet")
                             .font(.system(.headline, design: .rounded))
                         Text("Scanned dog emotions will automatically appear here.")
@@ -75,6 +76,8 @@ struct HistoryView: View {
                                     }
                                 }
                                 .padding(.vertical, 4)
+                                .accessibilityElement(children: .combine)
+                                .accessibilityLabel("Scan on \(entry.timestamp.formatted(date: .abbreviated, time: .shortened)). Breed: \(entry.breed). Emotion: \(entry.emotionLabel.capitalized). Advice: \(entry.adviceText)")
                             }
                         }
                         .onDelete(perform: deleteEntries)
