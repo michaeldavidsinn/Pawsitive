@@ -46,6 +46,9 @@ struct ContentView: View {
                     onPhotoSelected: { selectedImage in
                         currentScreen = .loading
                         processSelectedImage(uiImage: selectedImage)
+                    },
+                    onClose: {
+                        currentScreen = .home
                     }
                 )
                 

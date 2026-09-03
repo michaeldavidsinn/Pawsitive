@@ -12,6 +12,7 @@ struct CameraCaptureScreen: View {
     @ObservedObject var cameraManager: CameraManager
     let onCapture: (CVPixelBuffer) -> Void
     var onPhotoSelected: ((UIImage) -> Void)? = nil
+    var onClose: (() -> Void)? = nil
     
     @State private var selectedItem: PhotosPickerItem? = nil
     
@@ -20,16 +21,36 @@ struct CameraCaptureScreen: View {
             CameraPreviewView(session: cameraManager.captureSession)
                 .ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: 12) {
+                // Top Navigation Bar (Back / Close Button)
+                HStack {
+                    if let onClose = onClose {
+                        Button(action: onClose) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 36, height: 36)
+                                .background(Color.black.opacity(0.4))
+                                .clipShape(Circle())
+                        }
+                        .frame(width: 44, height: 44)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the home screen.")
+                        .accessibilityAddTraits(.isButton)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                
+                // Centered Instruction Pill
                 Text("Center your dog's face in the frame")
                     .font(.system(.subheadline, design: .rounded))
                     .bold()
+                    .foregroundColor(.white)
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial, in: Capsule())
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-                    .padding(.top, 50)
                 
                 Spacer()
                 
@@ -83,13 +104,13 @@ struct CameraCaptureScreen: View {
                     .accessibilityAddTraits(.isButton)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 40)
-                .padding(.bottom, 50)
+                .padding(.vertical, 20)
                 .background(
                     LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]), startPoint: .bottom, endPoint: .top)
                 )
-                .ignoresSafeArea(edges: .bottom)
             }
+            .padding(.top)
+            .padding(.bottom)
         }
         .onChange(of: selectedItem) { newItem in
             Task {

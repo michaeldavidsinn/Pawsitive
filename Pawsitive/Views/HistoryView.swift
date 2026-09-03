@@ -31,49 +31,51 @@ struct HistoryView: View {
                 } else {
                     List {
                         ForEach(moodEntries) { entry in
-                            HStack(spacing: 16) {
-                                if let data = entry.imageData, let uiImage = UIImage(data: data) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 60, height: 60)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                } else {
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: 60, height: 60)
-                                        .overlay(Image(systemName: "pawprint.fill").foregroundColor(.gray))
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text(entry.breed)
-                                            .font(.system(.caption, design: .rounded))
-                                            .bold()
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 2)
-                                            .background(Theme.gradientStart.opacity(0.15))
-                                            .foregroundColor(Theme.gradientStart)
-                                            .clipShape(Capsule())
-                                        
-                                        Spacer()
-                                        
-                                        Text(entry.timestamp, style: .date)
-                                            .font(.system(.caption2, design: .rounded))
-                                            .foregroundColor(.secondary)
+                            NavigationLink(destination: HistoryDetailView(entry: entry)) {
+                                HStack(spacing: 16) {
+                                    if let data = entry.imageData, let uiImage = UIImage(data: data) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 60, height: 60)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color.gray.opacity(0.2))
+                                            .frame(width: 60, height: 60)
+                                            .overlay(Image(systemName: "pawprint.fill").foregroundColor(.gray))
                                     }
                                     
-                                    Text(entry.emotionLabel.capitalized)
-                                        .font(.system(.headline, design: .rounded))
-                                        .bold()
-                                    
-                                    Text(entry.adviceText)
-                                        .font(.system(.caption, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(2)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text(entry.breed)
+                                                .font(.system(.caption, design: .rounded))
+                                                .bold()
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 2)
+                                                .background(Theme.gradientStart.opacity(0.15))
+                                                .foregroundColor(Theme.gradientStart)
+                                                .clipShape(Capsule())
+                                            
+                                            Spacer()
+                                            
+                                            Text(entry.timestamp, style: .date)
+                                                .font(.system(.caption2, design: .rounded))
+                                                .foregroundColor(.secondary)
+                                        }
+                                        
+                                        Text(entry.emotionLabel.capitalized)
+                                            .font(.system(.headline, design: .rounded))
+                                            .bold()
+                                        
+                                        Text(entry.adviceText)
+                                            .font(.system(.caption, design: .rounded))
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(2)
+                                    }
                                 }
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
                         }
                         .onDelete(perform: deleteEntries)
                     }
