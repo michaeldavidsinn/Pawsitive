@@ -72,17 +72,11 @@ struct HomeView: View {
                         .padding(.horizontal)
                         
                         if moodEntries.isEmpty {
-                            VStack(spacing: 12) {
-                                Image(systemName: "photo.on.rectangle.angled")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.secondary.opacity(0.5))
-                                    .accessibilityHidden(true)
-                                Text("No recent scans yet.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 32)
+                            ContentUnavailableView(
+                                "No recent scans yet",
+                                systemImage: "photo.on.rectangle.angled"
+                            )
+                            .frame(height: 150)
                             .background(Color(UIColor.secondarySystemGroupedBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .padding(.horizontal)

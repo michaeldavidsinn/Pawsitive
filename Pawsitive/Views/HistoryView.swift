@@ -16,19 +16,11 @@ struct HistoryView: View {
         NavigationStack {
             Group {
                 if moodEntries.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "pawprint.circle")
-                            .font(.system(size: 64))
-                            .foregroundColor(.secondary)
-                            .accessibilityHidden(true)
-                        Text("No Scan History Yet")
-                            .font(.system(.headline, design: .rounded))
-                        Text("Scanned dog emotions will automatically appear here.")
-                            .font(.system(.subheadline, design: .rounded))
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(32)
+                    ContentUnavailableView(
+                        "No Scan History Yet",
+                        systemImage: "pawprint.circle",
+                        description: Text("Scanned dog emotions will automatically appear here.")
+                    )
                 } else {
                     List {
                         ForEach(moodEntries) { entry in
@@ -82,7 +74,7 @@ struct HistoryView: View {
                         }
                         .onDelete(perform: deleteEntries)
                     }
-                    .listStyle(.plain)
+                    .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Pet Mood Journal")
